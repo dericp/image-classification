@@ -8,6 +8,13 @@ def transform(X):
 def mapper(key, value):
     # key: None
     # value: one line of input file
+    for line in value:
+    	tokens = line.split()
+    	y = tokens[0]
+    	features = tokens[1:]
+    	print len(features)
+
+
     yield "key", "value"  # This is how you yield a key, value pair
 
 
