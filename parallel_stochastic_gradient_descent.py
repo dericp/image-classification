@@ -25,11 +25,12 @@ def transform(X):
     else:
         print('X was not one dimensional ' + str(X.shape))
         ret = np.zeros([X.shape[0], m])
+        # this can either be out here or inside
         w = np.random.randn(m, X.shape[1])
         b = np.random.rand(m) * 2 * np.pi
 
         for i in range(X.shape[0]):
-            print('transforming the ' + str(i) + ' feature vector')
+            #print('transforming the ' + str(i) + ' feature vector')
             for j in range(m):
                 ret[i][j] = np.cos(np.dot(w[j], X[i]) + b[j])
 
@@ -74,18 +75,23 @@ def update_weights(w, features, classifications, t):
     # let's find delta t
 
     eta = 1 / (t * lambda_val)
-    summed_loss = 0
+    summed_loss = np.zeros(m)
     for i in range(features.shape[0]):
-        summed_loss += hinge_loss(w, features[i], classifications[i])
+        summed_loss += hinge_loss_gradient(w, features[i], classifications[i])
     delta_t = lambda_val * w - (eta / 5000) * summed_loss
+    print("delta_t " + str(delta_t))
 
     w_prime = w - eta * delta_t
 
     return min(1, (1 / math.sqrt(lambda_val) / w_prime.size)) * w_prime
 
 
-def hinge_loss(w, x, y):
-    return max(0, 1 - y * np.dot(w, x))
+def hinge_loss_gradient(w, x, y):
+    temp = np.dot(w, x) * y
+    if temp >= 1:
+        return 0
+    else:
+        return -y * x
 
 
 def reducer(key, values):
