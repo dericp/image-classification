@@ -4,7 +4,7 @@ import math
 
 # transforms X into m-dimensional feature vectors using RFF and RBF kernel
 def transform(X):
-    print('in transform method')
+    #print('in transform method')
     # Make sure this function works for both 1D and 2D NumPy arrays.
     # m is the dimension of the transformed feature vector
     m = 1000
@@ -84,7 +84,7 @@ def update_weights(w, features, classifications, t):
 
 
 def hinge_loss(w, x, y):
-    max(0, 1 - y * np.dot(w, x))
+    return max(0, 1 - y * np.dot(w, x))
 
 
 def reducer(key, values):
