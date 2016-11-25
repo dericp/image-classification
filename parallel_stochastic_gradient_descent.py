@@ -10,16 +10,15 @@ def list2array(list):
     return input_2darray
 
 def transform(X):
-    print "MZ*********"
-    print len(X)
+    print "******** transform *********"
+    print "dim is " + str(X.ndim)
     # Make sure this function works for both 1D and 2D NumPy arrays.
     if X.ndim == 1:
-        X.append(X,1)
+        X = np.append(X,1)
     else:
-        # for i in range(len(X)):
-        #     X[i] = np.append(X[i], 1)
-        a = np.transpose(np.ones(len(X)))
-        X = np.column_stack((X, a))
+        print "number of test is " + str(len(X))
+        ones = np.ones(len(X))
+        X = np.column_stack((X, ones))
     return X
 
 def computeFF(x,y,m): # this code is for RBF kernel
@@ -91,12 +90,11 @@ def mapper(key, value):
 
 
 def reducer(key, values):
-    print len(values)
+    print "************* reducer ************"
     a = np.empty((16,401))
     for i in range(len(values)):
         a[i] = np.fromstring(values[i])
-    print a
-    print len(np.mean(a, axis=0))
+    print "length of mean w is " + str(len(np.mean(a, axis=0)))
     # key: key from mapper used to aggregate
     # values: list of all value for that key
     # Note that we do *not* output a (key, value) pair here.
