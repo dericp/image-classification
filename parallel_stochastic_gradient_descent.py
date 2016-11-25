@@ -46,7 +46,7 @@ def mapper(key, value):
         w = update_weights(w, features, classifications, t)
         t += 1
 
-    yield "key", "value"  # This is how you yield a key, value pair
+    yield "key", w  # This is how you yield a key, value pair
 
 
 def update_weights(w, features, classifications, t):
@@ -68,9 +68,10 @@ def hinge_loss(w, x, y):
     max(0, 1 - y * np.inner(w, x))
 
 
-
 def reducer(key, values):
-    # key: key from mapper used to aggregate
-    # values: list of all value for that key
-    # Note that we do *not* output a (key, value) pair here.
-    yield np.random.randn(400)
+    average = np.zeros(1000)
+
+    for w in values:
+        average += w
+
+    yield average / (80000 / 5000)
