@@ -10,7 +10,16 @@ def list2array(list):
     return input_2darray
 
 def transform(X):
+    print "MZ*********"
+    print len(X)
     # Make sure this function works for both 1D and 2D NumPy arrays.
+    if X.ndim == 1:
+        X.append(X,1)
+    else:
+        # for i in range(len(X)):
+        #     X[i] = np.append(X[i], 1)
+        a = np.transpose(np.ones(len(X)))
+        X = np.column_stack((X, a))
     return X
 
 def computeFF(x,y,m): # this code is for RBF kernel
@@ -64,17 +73,31 @@ def mapper(key, value):
     # key: None
     # value: one line of input file
     value = list2array(value)
+    w = np.zeros(401)
+    print "*********** mapper ********"
+    step = 0
+    lambda_ = 0.1
     for line in value:
-     #   tokens = line.split()
+        step += 1
         y = line[0]
-        features = line[1:]
-
-        print len(features)
-    yield "key", "value"  # This is how you yield a key, value pair
+        features = np.append(line[1:], 1)
+        if (y * np.dot(w, features) < 1):
+            w = w + y*features/np.sqrt(step)
+            len_w = np.sqrt(np.dot(w,w)/len(w))
+            #print "len_w is " + str(len_w)
+            #print "proj: " + str(1/(np.sqrt(lambda_) * len_w))
+            w = w * min(1, 1/(np.sqrt(lambda_) * len_w))
+    yield "key", w.tostring()  # This is how you yield a key, value pair
 
 
 def reducer(key, values):
+    print len(values)
+    a = np.empty((16,401))
+    for i in range(len(values)):
+        a[i] = np.fromstring(values[i])
+    print a
+    print len(np.mean(a, axis=0))
     # key: key from mapper used to aggregate
     # values: list of all value for that key
     # Note that we do *not* output a (key, value) pair here.
-    yield np.random.randn(400)
+    yield np.mean(a, axis=0)
