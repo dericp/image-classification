@@ -1,9 +1,9 @@
 import numpy as np
 import math
 
-m = 3000
-iterations = 300000
-lambda_val = 1e-7
+m = 1000
+iterations = 500000
+lambda_val = 1e-8
 sigma = 10;
 
 
@@ -13,12 +13,15 @@ def transform(X):
     # Make sure this function works for both 1D and 2D NumPy arrays.
     # m is the dimension of the transformed feature vector
 
+    #w = sigma * np.random.randn(m, X.shape[1])
+    #w = sigma * np.random.randn(m, X.size)
+
+    b = np.random.rand(m) * 2 * np.pi
+
     if X.ndim == 1:
         print('X was one dimensional ' + str(X.shape))
+        w = np.random.multivariate_normal(np.zeros(X.size), 100 * np.identity(X.size), m)
         ret = np.zeros(m)
-        w = np.random.multivariate_normal(np.zeros(400), 100 * np.identity(400), m)
-        #w = sigma * np.random.randn(m, X.size)
-        b = np.random.rand(m) * 2 * np.pi
 
         for i in range(m):
             ret[i] = math.sqrt(2) * np.cos(np.dot(w[i], X) + b[i])
@@ -26,11 +29,8 @@ def transform(X):
         return ret
     else:
         print('X was not one dimensional ' + str(X.shape))
+        w = np.random.multivariate_normal(np.zeros(X.shape[1]), 100 * np.identity(X.shape[1]), m)
         ret = np.zeros([X.shape[0], m])
-        # this can either be out here or inside
-        w = np.random.multivariate_normal(np.zeros(400), 100 * np.identity(400), m)
-        #w = sigma * np.random.randn(m, X.shape[1])
-        b = np.random.rand(m) * 2 * np.pi
 
         for i in range(X.shape[0]):
             #print('transforming the ' + str(i) + ' feature vector')
