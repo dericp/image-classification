@@ -1,9 +1,10 @@
 import numpy as np
 import math
 
-m = 400
-iterations = 500
-lambda_val = 0.001
+m = 3000
+iterations = 300000
+lambda_val = 1e-7
+sigma = 10;
 
 
 # transforms X into m-dimensional feature vectors using RFF and RBF kernel
@@ -15,7 +16,8 @@ def transform(X):
     if X.ndim == 1:
         print('X was one dimensional ' + str(X.shape))
         ret = np.zeros(m)
-        w = np.random.randn(m, X.size)
+        w = np.random.multivariate_normal(np.zeros(400), 100 * np.identity(400), m)
+        #w = sigma * np.random.randn(m, X.size)
         b = np.random.rand(m) * 2 * np.pi
 
         for i in range(m):
@@ -26,7 +28,8 @@ def transform(X):
         print('X was not one dimensional ' + str(X.shape))
         ret = np.zeros([X.shape[0], m])
         # this can either be out here or inside
-        w = np.random.randn(m, X.shape[1])
+        w = np.random.multivariate_normal(np.zeros(400), 100 * np.identity(400), m)
+        #w = sigma * np.random.randn(m, X.shape[1])
         b = np.random.rand(m) * 2 * np.pi
 
         for i in range(X.shape[0]):
@@ -38,67 +41,62 @@ def transform(X):
 
 
 def mapper(key, value):
-    print('got into the mapper')
+    #print('got into the mapper')
     # key: None
     # value: one line of input file
 
     # 2D NumPy array containing the original feature vectors
     features = np.zeros([5000,400])# this [5000,401] could be a more flexible coding
-    print('made empty features')
+    #print('made empty features')
     # 1D NumPy array containing the classifications of the training data
     classifications = np.zeros(5000)
-    print('made empty classifications')
+    #print('made empty classifications')
 
     # populate features and classifications
     for i in range(len(value)):
         tokens = value[i].split()
         classifications[i] = tokens[0]
-        for j in range(0, len(tokens) - 1):
-            features[i, j] = float(tokens[j])
+        for j in range(1, len(tokens)):
+            features[i, j - 1] = float(tokens[j])
 
-    print('populated features and classifications')
+    #print('populated features and classifications')
 
     # project features into higher dimensional space
     features = transform(features)
     print('transformed features. features now dim ' + str(features.shape))
 
     w = np.zeros(m)
-    print('starting gradient descent')
+    #print('starting gradient descent')
     for i in range(1, iterations):
-        print('on timestep ' + str(i))
+        #print('on timestep ' + str(i))
         w = update_weights(w, features, classifications, i)
 
     yield 'key', w  # This is how you yield a key, value pair
 
 
 def update_weights(w, features, classifications, t):
-    # let's find delta t
 
-    eta = 1 / (t * lambda_val)
-    summed_loss = np.zeros(m)
-    for i in range(features.shape[0]):
-        summed_loss += hinge_loss_gradient(w, features[i], classifications[i])
-    delta_t = lambda_val * w - (eta / 5000) * summed_loss
-    print("delta_t " + str(delta_t))
+    i = int(np.random.uniform(0, features.shape[0]))
 
-    w_prime = w - eta * delta_t
-
-    return min(1, (1 / math.sqrt(lambda_val) / w_prime.size)) * w_prime
+    learning_rate = 1 / (lambda_val * t)
+    new_w = (1 - learning_rate * lambda_val) * w + learning_rate * hinge_loss_gradient(w, features[i], classifications[i])
+    # optional projection step
+    new_w = min(1, ((1 / math.sqrt(lambda_val)) / np.linalg.norm(new_w))) * new_w
+    return new_w
 
 
 def hinge_loss_gradient(w, x, y):
-    temp = np.dot(w, x) * y
-    if temp >= 1:
+    if np.dot(w, x) * y >= 1:
         return 0
     else:
-        return -y * x
+        return y * x
 
 
 def reducer(key, values):
-    average = np.zeros(m)
+    cumulative_weights = np.zeros(m)
 
     for w in values:
-        #feature_vector = np.fromstring(w)
-        average += w
+        cumulative_weights += w
 
-    yield average / (80000 / 5000)
+    # yield the average
+    yield cumulative_weights / len(values)
