@@ -92,7 +92,7 @@ def update_weights(w, features, classifications, t):
     return new_w
 
 def adagrad(w, features, classfications, t):
-    
+    new_adagrad_w = w
 
     return new_adagrad_w
 
