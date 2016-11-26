@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import linalg as LA
+import random
 
 def list2array(list):
     input_2darray = np.zeros([5000,401])# this [5000,401] could be a more flexible coding
@@ -75,17 +76,37 @@ def mapper(key, value):
     w = np.zeros(401)
     print "*********** mapper ********"
     step = 0
-    lambda_ = 0.1
-    for line in value:
-        step += 1
-        y = line[0]
-        features = np.append(line[1:], 1)
-        if (y * np.dot(w, features) < 1):
-            w = w + y*features/np.sqrt(step)
-            len_w = np.sqrt(np.dot(w,w)/len(w))
-            #print "len_w is " + str(len_w)
-            #print "proj: " + str(1/(np.sqrt(lambda_) * len_w))
-            w = w * min(1, 1/(np.sqrt(lambda_) * len_w))
+    lambda_ = 0.00001
+    T = 2000
+    k = 50 # k is the size of the randomly chosen subset
+
+    ############ IMPLEMENTATION OF OPGD ############
+    # for line in value:
+    #     step += 1
+    #     y = line[0]
+    #     features = np.append(line[1:], 1)
+    #     if (y * np.dot(w, features) < 1):
+    #         w = w + y*features/np.sqrt(step)
+    #         len_w = np.sqrt(np.dot(w,w)/len(w))
+    #         #print "len_w is " + str(len_w)
+    #         #print "proj: " + str(1/(np.sqrt(lambda_) * len_w))
+    #         w = w * min(1, 1/(np.sqrt(lambda_) * len_w))
+
+    ############ IMPLEMENTATION OF PEGASOS ############
+    for t in range(T):
+        setIndex = random.sample(range(0, 5000), k)
+        g_sum = np.zeros(401)
+        for i in setIndex:
+            line = value[i]
+            y = line[0]
+            features = np.append(line[1:], 1)
+            if (y * np.dot(w, features) < 1):
+                g_sum += y*features
+        w = (1-1.0/(1+t))*w + g_sum/(k*(t+1)*lambda_)
+        size_w = np.sqrt(np.dot(w,w)/len(w))
+        w = w * min(1, 1/(np.sqrt(lambda_) * size_w))
+
+
     yield "key", w.tostring()  # This is how you yield a key, value pair
 
 
