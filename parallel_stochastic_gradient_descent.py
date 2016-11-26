@@ -1,9 +1,9 @@
 import numpy as np
 import math
 
-m = 1000
+m = 3000
 iterations = 500000
-lambda_val = 1e-8
+lambda_val = 1e-6
 sigma = 10;
 
 
@@ -15,7 +15,9 @@ def transform(X):
 
     #w = sigma * np.random.randn(m, X.shape[1])
     #w = sigma * np.random.randn(m, X.size)
-
+    sqrtm = np.sqrt(m)# the sqrt(m) should be calculated to get the "mean-like" expectation
+    # calculate the constants in advance may be faster
+    sqrt2 = np.sqrt(2)
     b = np.random.rand(m) * 2 * np.pi
 
     if X.ndim == 1:
@@ -24,9 +26,9 @@ def transform(X):
         ret = np.zeros(m)
 
         for i in range(m):
-            ret[i] = math.sqrt(2) * np.cos(np.dot(w[i], X) + b[i])
+            ret[i] = sqrt2 * np.cos(np.dot(w[i], X) + b[i])
 
-        return ret
+        return ret / sqrtm # should be devided by sqrt(m) to get the expectation
     else:
         print('X was not one dimensional ' + str(X.shape))
         w = np.random.multivariate_normal(np.zeros(X.shape[1]), 100 * np.identity(X.shape[1]), m)
@@ -37,7 +39,7 @@ def transform(X):
             for j in range(m):
                 ret[i][j] = np.cos(np.dot(w[j], X[i]) + b[j])
 
-        return math.sqrt(2) * ret
+        return sqrt2 * ret / sqrtm
 
 
 def mapper(key, value):
@@ -46,7 +48,7 @@ def mapper(key, value):
     # value: one line of input file
 
     # 2D NumPy array containing the original feature vectors
-    features = np.zeros([5000,400])# this [5000,401] could be a more flexible coding
+    features = np.zeros([5000,400])# this [5000,400] could be a more flexible coding
     #print('made empty features')
     # 1D NumPy array containing the classifications of the training data
     classifications = np.zeros(5000)
@@ -81,8 +83,19 @@ def update_weights(w, features, classifications, t):
     learning_rate = 1 / (lambda_val * t)
     new_w = (1 - learning_rate * lambda_val) * w + learning_rate * hinge_loss_gradient(w, features[i], classifications[i])
     # optional projection step
-    new_w = min(1, ((1 / math.sqrt(lambda_val)) / np.linalg.norm(new_w))) * new_w
+    #new_w = min(1, ((1 / math.sqrt(lambda_val)) / np.linalg.norm(new_w))) * new_w # there are two signs of division?
+    # the code above should be replaced by a if-else to decide if the norm exceeds the norm(w)<=1/sqrt(lambda) resctriction
+    norm_new_w = np.linalg.norm(w)
+    sqrt_lambda = np.sqrt(lambda_val)
+    if norm_new_w >= 1/sqrt_lambda:
+        new_w = new_w / (norm_new_w * sqrt_lambda)
     return new_w
+
+def adagrad(w, features, classfications, t):
+    
+
+    return new_adagrad_w
+
 
 
 def hinge_loss_gradient(w, x, y):
