@@ -2,7 +2,7 @@ import numpy as np
 
 # constants
 m = 3000
-iterations = 100000
+iterations = 300000
 lambda_val = 1e-6
 sigma = 10
 
