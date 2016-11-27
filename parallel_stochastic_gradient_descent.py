@@ -1,7 +1,7 @@
 import numpy as np
 
 # constants
-m = 2500
+m = 3000
 iterations = 100000
 lambda_val = 1e-6
 sigma = 10
@@ -16,29 +16,10 @@ def transform(X):
 
     if X.ndim == 1:
         w = np.random.multivariate_normal(np.zeros(X.size), sigma**2 * np.identity(X.size), m)
-        transformed_features = np.zeros(m)
-
-        for i in range(m):
-            transformed_features[i] = np.cos(np.dot(w[i], X) + b[i])
-
-        return (2.0 / m)**0.5 * transformed_features
     else:
         w = np.random.multivariate_normal(np.zeros(X.shape[1]), sigma**2 * np.identity(X.shape[1]), m)
-        #transformed_features = np.zeros([X.shape[0], m])
 
-        transformed_features = (2.0 / m)**0.5 * np.cos(np.dot(X, np.transpose(w)) + b)
-
-
-        '''for i in range(X.shape[0]):
-            for j in range(m):
-                transformed_features[i][j] = np.cos(np.dot(w[j], X[i]) + b[j])'''
-
-        #transformed_features = (2.0 / m)**0.5 * transformed_features
-
-        # normalize the features
-        #transformed_features = (transformed_features - np.mean(transformed_features, 1)[:, None]) / np.std(transformed_features, 1)[:, None]
-
-        return transformed_features
+    return (2.0 / m)**0.5 * np.cos(np.dot(X, np.transpose(w)) + b)
 
 
 # key: None
