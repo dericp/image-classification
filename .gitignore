@@ -73,3 +73,6 @@ fabric.properties
 
 # Ignore data folder
 data/
+
+# Ignore python notebook
+notebook/
