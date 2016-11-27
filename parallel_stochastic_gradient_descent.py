@@ -1,17 +1,20 @@
 import numpy as np
 
 # constants
+# m is the dimension of the transformed feature vector
 m = 3000
+# number of iterations of PEGASOS
 iterations = 300000
+# regularization constant
 lambda_val = 1e-6
+# standard deviation of p in RFF
 sigma = 10
 
 
 # transforms X into m-dimensional feature vectors using RFF and RBF kernel
+# Make sure this function works for both 1D and 2D NumPy arrays.
 def transform(X):
-    # Make sure this function works for both 1D and 2D NumPy arrays.
-    # m is the dimension of the transformed feature vector
-
+    np.random.seed(0)
     b = np.random.rand(m) * 2 * np.pi
 
     if X.ndim == 1:
@@ -19,23 +22,26 @@ def transform(X):
     else:
         w = np.random.multivariate_normal(np.zeros(X.shape[1]), sigma**2 * np.identity(X.shape[1]), m)
 
-    return (2.0 / m)**0.5 * np.cos(np.dot(X, np.transpose(w)) + b)
+    transformed = (2.0 / m)**0.5 * np.cos(np.dot(X, np.transpose(w)) + b)
+    # feature normalization
+    transformed = (transformed - np.mean(transformed, 0)) / np.std(transformed, 0)
+
+    return transformed
 
 
 # key: None
 # value: one line of input file
 def mapper(key, value):
     # 2D NumPy array containing the original feature vectors
-    features = np.zeros([5000,400])# this [5000,400] could be a more flexible coding
+    features = np.zeros([len(value), len(value[0].split()) - 1])
     # 1D NumPy array containing the classifications of the training data
-    classifications = np.zeros(5000)
+    classifications = np.zeros(len(value))
 
     # populate features and classifications
     for i in range(len(value)):
         tokens = value[i].split()
         classifications[i] = tokens[0]
-        for j in range(1, len(tokens)):
-            features[i, j - 1] = float(tokens[j])
+        features[i] = tokens[1:]
 
     # project features into higher dimensional space
     features = transform(features)
